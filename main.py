@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from database.database import Base , engine
-from routes import auth
+from routes import auth,weather
 from alembic.config import Config
 from alembic import command
 import traceback
@@ -16,6 +16,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.include_router(auth.router,tags=["Auth"])
+app.include_router(weather.router, tags=["Weather"])
 
 # TEMPORARY: remove this once login is confirmed working.
 # Exposes real Python errors in the response instead of a blank 500.
