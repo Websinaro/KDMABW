@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 engine = create_engine(DATABASE_URL)
 
-SessionLocal = seccionmaker(
+SessionLocal = sessionmaker(
 	autocommit=False,
 	autoflush=False,
 	bind=engine
