@@ -1,4 +1,4 @@
-from fastapi import Depends,HTTPException,status
+from fastapi import APIRouter,Depends,HTTPException,status
 from fastapi.security import OAuth2PasswordBearer
 from security.jwt import create_access_token
 from sqlalchemy.orm import Session
