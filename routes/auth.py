@@ -1,0 +1,44 @@
+from fastapi import Depends,HTTPException,status
+from fastapi.security import OAuth2PasswordBearer
+from app.security.security.jwt import create_access_token
+from sqlalchemy.orm import Session
+from datetime import datetime
+
+from database.database import get_db
+from model import model
+from scheme import scheme
+from security.security.hashing import hashPass,verifyPass
+
+router = APIRouter()
+
+@router.post("/register",response_model=scheme.UserOut)
+def register(user: scheme.UserCreate,db = Depends(get_db)):
+	existing = db.query(model.User).filter(model.User.email == user.email).first()
+	if existing:
+		raise HTTPError(status_code=400,detail="Email Already Registered")
+	new_user = model.User(
+	name = user.name,
+	email = user.email,
+	phone = user.phone,
+	password = hashPass(user.password),
+	district = user.district,
+	role = "user",
+	created_time = str(datetime.utcnow())
+	)
+	
+	db.add(new_user)
+	db.commit()
+	db.refresh(new_user)
+	return new_user
+	
+@router.post("/login", response_model=schema.Token)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+	user = db.query(model.User).filter(model.User.email == form_data.username).first()
+	if not user or not verify_password(form_data.password, user.password):
+		raise HTTPException(
+			status_code=status.HTTP_401_UNAUTHORIZED,
+			detail="Incorrect email or password or User not found",
+			headers={"WWW-Authenticate": "Bearer"},
+		)
+	access_token = create_access_token(data={"sub": user.email})
+	return {"access_token": access_token, "token_type": "bearer"}
