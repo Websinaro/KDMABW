@@ -7,7 +7,7 @@ from datetime import datetime
 from database.database import get_db
 from model import model
 from scheme import scheme
-from security.security.hashing import hashPass,verifyPass
+from security.hashing import hashPass,verifyPass
 
 router = APIRouter()
 
