@@ -1,5 +1,16 @@
 from pydantic import BaseModel, EmailStr,ConfigDict
 from datetime import datetime
+from fastapi import Form
+from typing import Annotated
+
+class LoginForm:
+	def __init__(
+		self,
+		email: Annotated[str, Form()],
+		password: Annotated[str, Form()],
+	):
+		self.username = email
+		self.password = password
 
 class UserCreate(BaseModel):
 	name: str
