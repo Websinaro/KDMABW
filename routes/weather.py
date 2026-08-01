@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from services.weather_service import fetch_weather
 from scheme.weather_scheme import WeatherResponse
 from data.weather_codes import get_weather_info
@@ -6,17 +6,19 @@ from data.severity import get_alert_level
 
 router = APIRouter()
 
-@router.get("/weather/{district}", response_model=WeatherResponse)
-async def get_weather(district: str):
-	result = await fetch_weather(district)
-	if result is None:
-		raise HTTPException(status_code=404, detail="District not found in Kerala list")
-
+@router.get("/weather", response_model=WeatherResponse)
+async def get_weather(
+	lat: float = Query(..., ge=-90, le=90),
+	lon: float = Query(..., ge=-180, le=180)
+):
+	result = await fetch_weather(lat, lon)
 	data = result["weather"]
 	air = result["air"]
 
 	response = {
-		"district": district,
+		"location_name": result["place_name"],
+		"latitude": lat,
+		"longitude": lon,
 		"current": {
 			"temperature": data["current"]["temperature_2m"],
 			"feels_like": data["current"]["apparent_temperature"],
@@ -63,14 +65,6 @@ async def get_weather(district: str):
 			"weather_code": data["daily"]["weather_code"],
 		}
 	}
-	response["current"]["weather_label"] = get_weather_info(response["current"]["weather_code"])["label"]
-	response["current"]["weather_icon"] = get_weather_info(response["current"]["weather_code"])["icon"]
-
-	response["alert_level"] = get_alert_level(
-	weather_code=response["current"]["weather_code"],
-	rain_probability=response["hourly"]["rain_probability"][0] or 0,
-	wind_speed=response["current"]["wind_speed"]
-)
 
 	if air:
 		response["air_quality"] = {
@@ -80,5 +74,14 @@ async def get_weather(district: str):
 			"ozone": air["current"].get("ozone"),
 			"carbon_monoxide": air["current"].get("carbon_monoxide"),
 		}
+
+	response["current"]["weather_label"] = get_weather_info(response["current"]["weather_code"])["label"]
+	response["current"]["weather_icon"] = get_weather_info(response["current"]["weather_code"])["icon"]
+
+	response["alert_level"] = get_alert_level(
+		weather_code=response["current"]["weather_code"],
+		rain_probability=response["hourly"]["rain_probability"][0] or 0,
+		wind_speed=response["current"]["wind_speed"]
+	)
 
 	return response

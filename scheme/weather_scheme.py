@@ -53,7 +53,10 @@ class DailyForecast(BaseModel):
 	weather_code: List[int]
 
 class WeatherResponse(BaseModel):
-	district: str
+	location_name: Optional[str] = None
+	latitude: float
+	longitude: float
+	alert_level: str
 	current: CurrentWeather
 	air_quality: Optional[AirQuality] = None
 	hourly: HourlyForecast
