@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database.database import Base , engine
-from route import auth
+from routes import auth
 from alembic.config import Config
 from alembic import command
 
