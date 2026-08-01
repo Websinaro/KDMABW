@@ -31,7 +31,7 @@ def register(user: scheme.UserCreate,db = Depends(get_db)):
 	db.refresh(new_user)
 	return new_user
 	
-@router.post("/login", response_model=schema.Token)
+@router.post("/login", response_model=scheme.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
 	user = db.query(model.User).filter(model.User.email == form_data.username).first()
 	if not user or not verify_password(form_data.password, user.password):
