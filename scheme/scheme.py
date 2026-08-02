@@ -1,7 +1,26 @@
-from pydantic import BaseModel, EmailStr,ConfigDict
-from datetime import datetime
 from fastapi import Form
-from typing import Annotated, Optional
+from typing import Annotated
+from pydantic import BaseModel, EmailStr, ConfigDict
+
+class UserCreate(BaseModel):
+	name: str
+	email: EmailStr
+	phone: str
+	password: str
+	district: str
+
+class UserOut(BaseModel):
+	id: int
+	name: str
+	email: EmailStr
+	district: str
+	role: str
+
+	model_config = ConfigDict(from_attributes=True)
+
+class Token(BaseModel):
+	access_token: str
+	token_type: str
 
 class LoginForm:
 	def __init__(
@@ -11,24 +30,3 @@ class LoginForm:
 	):
 		self.username = email
 		self.password = password
-
-class UserCreate(BaseModel):
-	name: str
-	email:EmailStr
-	phone:str
-	password:str
-	district:str
-	access_code: Optional[str] = None
-	
-class UserOut(BaseModel):
-	id:int
-	name:str
-	email:EmailStr
-	district:str
-	role:str
-	
-	model_config = ConfigDict(from_attributes=True)
-	
-class Token(BaseModel):
-	access_token:str
-	token_type:str

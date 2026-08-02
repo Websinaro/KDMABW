@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from services.weather_service import fetch_weather
 from scheme.weather_scheme import WeatherResponse
 from data.weather_codes import get_weather_info

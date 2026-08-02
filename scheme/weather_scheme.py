@@ -8,6 +8,8 @@ class CurrentWeather(BaseModel):
 	precipitation: float
 	rain: float
 	weather_code: int
+	weather_label: Optional[str] = None
+	weather_icon: Optional[str] = None
 	cloud_cover: float
 	pressure: float
 	wind_speed: float
