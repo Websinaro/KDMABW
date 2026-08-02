@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr,ConfigDict
 from datetime import datetime
 from fastapi import Form
-from typing import Annotated
+from typing import Annotated, Optional
 
 class LoginForm:
 	def __init__(
@@ -18,6 +18,7 @@ class UserCreate(BaseModel):
 	phone:str
 	password:str
 	district:str
+	access_code: Optional[str] = None
 	
 class UserOut(BaseModel):
 	id:int
