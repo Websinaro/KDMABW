@@ -1,17 +1,29 @@
 import asyncio
 from fastapi import APIRouter
-from services.weather_service import fetch_weather
+from services.weather_service import fetch_current_only
 from data.kerala_districts import KERALA_DISTRICTS
 from data.weather_codes import get_weather_info
 from data.severity import get_alert_level
+from utils.time_index import get_current_hour_index
 
 router = APIRouter()
 
+_semaphore = asyncio.Semaphore(5)  # max 5 in-flight requests at once
+
 async def _district_weather(name: str, coords: dict):
-	result = await fetch_weather(coords["lat"], coords["lon"])
-	data = result["weather"]
+	async with _semaphore:
+		for attempt in range(2):  # one retry on transient failure
+			try:
+				data = await fetch_current_only(coords["lat"], coords["lon"])
+				break
+			except Exception:
+				if attempt == 1:
+					return None
+				await asyncio.sleep(1)
+
 	current = data["current"]
-	rain_prob = data["hourly"]["precipitation_probability"][0] or 0
+	hour_index = get_current_hour_index(data["hourly"]["time"])
+	rain_prob = data["hourly"]["precipitation_probability"][hour_index] or 0
 
 	alert_level = get_alert_level(
 		weather_code=current["weather_code"],
@@ -37,8 +49,7 @@ async def _district_weather(name: str, coords: dict):
 @router.get("/weather/kerala-map")
 async def get_kerala_map():
 	tasks = [_district_weather(name, coords) for name, coords in KERALA_DISTRICTS.items()]
-	results = await asyncio.gather(*tasks, return_exceptions=True)
+	results = await asyncio.gather(*tasks)
+	districts = [r for r in results if r is not None]
 
-	districts = [r for r in results if not isinstance(r, Exception)]
-
-	return {"districts": districts}
+	return {"districts": districts, "total": len(KERALA_DISTRICTS), "loaded": len(districts)}
