@@ -5,6 +5,7 @@ from routes import auth,weather
 from alembic.config import Config
 from alembic import command
 import traceback
+from middleware.encryption_middleware import EncryptionMiddleware
 
 def run_migrations():
 	alembic_cfg = Config("alembic.ini")
@@ -17,6 +18,8 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.include_router(auth.router,tags=["Auth"])
 app.include_router(weather.router, tags=["Weather"])
+app.add_middleware(EncryptionMiddleware)
+
 
 # TEMPORARY: remove this once login is confirmed working.
 # Exposes real Python errors in the response instead of a blank 500.
