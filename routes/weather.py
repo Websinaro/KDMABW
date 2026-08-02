@@ -3,6 +3,7 @@ from services.weather_service import fetch_weather
 from scheme.weather_scheme import WeatherResponse
 from data.weather_codes import get_weather_info
 from data.severity import get_alert_level
+from utils.time_index import get_current_hour_index
 
 router = APIRouter()
 
@@ -78,10 +79,11 @@ async def get_weather(
 	response["current"]["weather_label"] = get_weather_info(response["current"]["weather_code"])["label"]
 	response["current"]["weather_icon"] = get_weather_info(response["current"]["weather_code"])["icon"]
 
-	response["alert_level"] = get_alert_level(
-		weather_code=response["current"]["weather_code"],
-		rain_probability=response["hourly"]["rain_probability"][0] or 0,
-		wind_speed=response["current"]["wind_speed"]
-	)
+	hour_index = get_current_hour_index(response["hourly"]["time"])
+    response["alert_level"] = get_alert_level(
+	weather_code=response["current"]["weather_code"],
+	rain_probability=response["hourly"]["rain_probability"][hour_index] or 0,
+	wind_speed=response["current"]["wind_speed"]
+    )
 
 	return response
