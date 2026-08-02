@@ -5,9 +5,15 @@ from starlette.responses import Response
 
 from security.crypto import encrypt_payload, decrypt_payload
 
+# Paths that must stay plain JSON — Swagger/OpenAPI need to read these directly,
+# and "/" is a manual health-check people hit in a browser.
+EXCLUDED_PATHS = {"/docs", "/redoc", "/openapi.json", "/"}
+
 class EncryptionMiddleware(BaseHTTPMiddleware):
 	async def dispatch(self, request: Request, call_next):
-		# Decrypt incoming JSON body if it's wrapped as {"data": "..."}
+		if request.url.path in EXCLUDED_PATHS:
+			return await call_next(request)
+
 		if request.method in ("POST", "PUT", "PATCH") and request.headers.get("content-type", "").startswith("application/json"):
 			body_bytes = await request.body()
 			if body_bytes:
@@ -16,10 +22,6 @@ class EncryptionMiddleware(BaseHTTPMiddleware):
 					if "data" in wrapper:
 						decrypted = decrypt_payload(wrapper["data"])
 						new_body = json.dumps(decrypted).encode("utf-8")
-
-						# CRITICAL: overwrite the cached body, not just _receive,
-						# otherwise FastAPI's route validation reads the old
-						# (still encrypted) bytes and fails with 422.
 						request._body = new_body
 
 						async def receive():
@@ -27,11 +29,10 @@ class EncryptionMiddleware(BaseHTTPMiddleware):
 
 						request._receive = receive
 				except Exception:
-					pass  # not encrypted -> let route validation handle it normally
+					pass
 
 		response = await call_next(request)
 
-		# Only encrypt successful JSON responses; leave errors readable for debugging
 		if 200 <= response.status_code < 300 and response.headers.get("content-type", "").startswith("application/json"):
 			body = b""
 			async for chunk in response.body_iterator:
