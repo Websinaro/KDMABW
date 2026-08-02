@@ -2,7 +2,9 @@ import os
 import json
 import base64
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from config.config import AES_KEY
+from config.config import AES_SECRET_KEY
+
+AES_KEY = base64.b64decode("AES_SECRET_KEY")
 
 def encrypt_payload(data: dict) -> str:
 	aesgcm = AESGCM(AES_KEY)
