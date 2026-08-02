@@ -51,3 +51,17 @@ async def fetch_weather(lat: float, lon: float):
 			air_data = None
 
 		return {"weather": weather_resp.json(), "air": air_data, "place_name": place_name}
+
+async def fetch_current_only(lat: float, lon: float):
+	params = {
+		"latitude": lat,
+		"longitude": lon,
+		"current": "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+		"hourly": "precipitation_probability",
+		"timezone": "Asia/Kolkata",
+		"forecast_days": 1,
+	}
+	async with httpx.AsyncClient(timeout=15.0) as client:
+		resp = await client.get(WEATHER_URL, params=params)
+		resp.raise_for_status()
+		return resp.json()
