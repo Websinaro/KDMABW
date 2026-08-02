@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database.database import Base, engine
-from routes import auth, weather
+from routes import auth, weather,map as kerala_map
 from middleware.encryption_middleware import EncryptionMiddleware
 from alembic.config import Config
 from alembic import command
@@ -19,6 +19,7 @@ app.add_middleware(EncryptionMiddleware)
 
 app.include_router(auth.router, tags=["Auth"])
 app.include_router(weather.router, tags=["Weather"])
+app.include_router(kerala_map.router,tags=["Map"])
 
 @app.get("/")
 def home():
