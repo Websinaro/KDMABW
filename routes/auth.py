@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from utils.password import passwordValidator
 
 from database.database import get_db
 from model import model
@@ -16,6 +17,9 @@ def register(user: scheme.UserCreate, db: Session = Depends(get_db)):
 	existing = db.query(model.User).filter(model.User.email == user.email).first()
 	if existing:
 		raise HTTPException(status_code=400, detail="Email Already Registered")
+
+	result = passwordValidator(user.password)
+	if result ==
 
 	new_user = model.User(
 		name=user.name,
