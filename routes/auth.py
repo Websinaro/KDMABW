@@ -21,12 +21,12 @@ def register(user: scheme.UserCreate, db: Session = Depends(get_db)):
 	result = passwordValidator(user.password)
 	if result == "Strong Password":
 		return {
-			"status":" success", 
+			"status": "success", 
 			" message":result
 		}
 	else:
 		return{
-			"status":" error", 
+			"status": "error", 
 			"message":result
 		}
 
