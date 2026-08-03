@@ -19,7 +19,16 @@ def register(user: scheme.UserCreate, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=400, detail="Email Already Registered")
 
 	result = passwordValidator(user.password)
-	if result ==
+	if result == "Strong Password":
+		return {
+			"status":" success", 
+			" message":result
+		}
+	else:
+		return{
+			"status":" error", 
+			"message":result
+		}
 
 	new_user = model.User(
 		name=user.name,
