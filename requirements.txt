@@ -1,5 +1,6 @@
 fastapi
-uvicorn
+uvicorn[standard]
+gunicorn
 sqlalchemy
 psycopg2-binary
 python-jose[cryptography]
@@ -10,3 +11,5 @@ pydantic[email]
 python-multipart
 cryptography
 httpx
+packaging
+firebase-admin
